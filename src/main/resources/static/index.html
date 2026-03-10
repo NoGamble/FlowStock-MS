@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>我的库存清单</h1>
+<div id="data">正在加载数据...</div>
+
+<script>
+    // 这就是前端“吃”接口的过程
+    fetch('/api/inventory') // 访问你写的后端路由
+        .then(res => res.json()) // 把返回的 JSON 转成 JS 对象
+        .then(data => {
+            // 把数据画在页面上
+            document.getElementById('data').innerHTML =
+                data.map(item => `<p>${item.itemName}: ${item.quantity}个</p>`).join('');
+        });
+</script>
+</body>
+</html>
