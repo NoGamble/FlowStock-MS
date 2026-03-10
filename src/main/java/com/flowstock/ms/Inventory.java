@@ -12,8 +12,16 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "item_name")
+    @Column(name = "item_name", nullable = false)
     private String itemName;
 
-    private Integer quantity;
+    @Column(name = "current_quantity")
+    private Integer currentQuantity;
+
+    @Column(name = "sku_code", unique = true)
+    private String skuCode;
+
+    @Column(name = "unit")
+    private String unit;
+
 }
