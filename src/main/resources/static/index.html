@@ -11,7 +11,7 @@
         .then(data => {
             // 把数据画在页面上
             document.getElementById('data').innerHTML =
-                data.map(item => `<p>${item.itemName}: ${item.quantity}个</p>`).join('');
+                data.map(item => `<p>${item.itemName}: ${item.currentQuantity}个</p>`).join('');
         });
 </script>
 </body>

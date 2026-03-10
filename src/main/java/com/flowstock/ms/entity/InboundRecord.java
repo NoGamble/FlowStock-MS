@@ -1,17 +1,13 @@
-package com.flowstock.ms;
+package com.flowstock.ms.entity;
 
 import  jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.ManyToAny;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "outbound_record")
+@Table(name = "inbound_record")
 @Data
-
-public class OutboundRecord {
-
+public class InboundRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,6 +19,7 @@ public class OutboundRecord {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "outbound_time")
-    private LocalDateTime outboundTime = LocalDateTime.now();
+    @Column(name = "inbound_time")
+    private LocalDateTime inboundTime = LocalDateTime.now();
+
 }

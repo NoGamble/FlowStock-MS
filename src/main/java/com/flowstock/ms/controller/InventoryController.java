@@ -1,5 +1,7 @@
-package com.flowstock.ms;
+package com.flowstock.ms.controller;
 
+import com.flowstock.ms.entity.Inventory;
+import com.flowstock.ms.repository.InventoryRepository;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
