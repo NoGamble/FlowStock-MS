@@ -1,13 +1,16 @@
-package com.flowstock.ms;
+package com.flowstock.ms.entity;
 
 import  jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "inbound_record")
+@Table(name = "outbound_record")
 @Data
-public class InboundRecord {
+
+public class OutboundRecord {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,7 +22,6 @@ public class InboundRecord {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "inbound_time")
-    private LocalDateTime inboundTime = LocalDateTime.now();
-
+    @Column(name = "outbound_time")
+    private LocalDateTime outboundTime = LocalDateTime.now();
 }

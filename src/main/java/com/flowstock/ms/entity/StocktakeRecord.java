@@ -1,9 +1,8 @@
-package com.flowstock.ms;
+package com.flowstock.ms.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity

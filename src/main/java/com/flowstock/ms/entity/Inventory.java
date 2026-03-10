@@ -1,4 +1,4 @@
-package com.flowstock.ms;
+package com.flowstock.ms.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
