@@ -18,13 +18,13 @@ public class StocktakeRecord {
     private Inventory inventory;
 
     @Column(name = "system_quantity")
-    private int systemQuantity;
+    private Integer systemQuantity;
 
     @Column(name = "actual_quantity")
-    private int actualQuantity;
+    private Integer actualQuantity;
 
     @Column(name = "diff_quantity", insertable = false, updatable = false)
-    private int diffQuantity;
+    private Integer diffQuantity;
 
     @Column(name = "stocktake_time")
     private LocalDateTime stocktakeTime = LocalDateTime.now();
