@@ -18,7 +18,7 @@ public class ProductService{
      * Retrieve all products from the inventory.
      * @return List of all inventory items.
      */
-    public List<Inventory> getAllProduct(){
+    public List<Inventory> getAllProducts(){
         return inventoryRepository.findAll();
     }
 
