@@ -1,0 +1,46 @@
+### 1. 创建第一个商品 (MacBook)
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "itemName": "MacBook Pro M3",
+  "currentQuantity": 10
+}
+
+###
+### 2. 查看所有商品 (验证是否创建成功)
+GET http://localhost:8080/api/products
+
+###
+### 3. 执行入库 (给 ID 为 1 的商品加 50 件)
+POST http://localhost:8080/api/stock-movements/inbound
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "amount": 50
+}
+
+###
+### 4. 执行盘点 (发现实测只有 48 件)
+POST http://localhost:8080/api/stocktakes?itemId=1&actualQuantity=48
+
+### 5. 执行出库 (卖掉 10 台 MacBook)
+# 预期结果：库存从 48 变成 38
+POST http://localhost:8080/api/stock-movements/outbound
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "amount": 10
+}
+
+### 9. 更新商品基础信息
+# 假设我们要把 ID 为 1 的商品改名
+PUT http://localhost:8080/api/products/1
+Content-Type: application/json
+
+{
+  "itemName": "MacBook Pro M3 Max (Updated)",
+  "currentQuantity": 100
+}

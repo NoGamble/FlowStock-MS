@@ -49,6 +49,7 @@ public class ProductService{
         Inventory existing = inventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
         existing.setItemName(details.getItemName());
+        existing.setCurrentQuantity(details.getCurrentQuantity());
         return inventoryRepository.save(existing);
     }
 
