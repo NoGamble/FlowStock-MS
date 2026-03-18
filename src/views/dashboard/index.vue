@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <n-card title="仪表盘" :bordered="false" class="page-card">
+    <n-card title="主页" :bordered="false" class="page-card">
       <n-p>这里是统计与看板区域。可以放置漂亮的 Echarts 图表、今日入库/出库数字卡片等。</n-p>
     </n-card>
   </div>

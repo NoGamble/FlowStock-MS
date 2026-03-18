@@ -66,11 +66,11 @@ function renderIcon(icon) {
 
 // 菜单配置
 const menuOptions = [
-  { label: '仪表盘', key: 'dashboard', icon: renderIcon(PieChartOutline) },
+  { label: '主页', key: 'dashboard', icon: renderIcon(PieChartOutline) },
   { label: '商品管理', key: 'product', icon: renderIcon(CubeOutline) },
   { label: '入库管理', key: 'inbound', icon: renderIcon(LogInOutline) },
   { label: '出库管理', key: 'outbound', icon: renderIcon(LogOutOutline) },
-  { label: '库存盘点', key: 'inventory-check', icon: renderIcon(ClipboardOutline) }
+  { label: '库存盘点', key: 'stocktake', icon: renderIcon(ClipboardOutline) }
 ]
 
 // 菜单点击事件：由于开启了多地址路由，直接 push

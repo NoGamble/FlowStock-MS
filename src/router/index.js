@@ -5,7 +5,7 @@ const routes = [
   {
     path: '/',
     component: MainLayout,
-    redirect: '/dashboard', // 默认重定向到仪表盘
+    redirect: '/dashboard',
     children: [
       {
         path: 'dashboard',
@@ -32,9 +32,9 @@ const routes = [
         meta: { title: '出库管理' }
       },
       {
-        path: 'inventory-check',
-        name: 'InventoryCheck',
-        component: () => import('../views/inventory-check/index.vue'),
+        path: 'stocktake',
+        name: 'Stocktake',
+        component: () => import('../views/stocktake/index.vue'),
         meta: { title: '库存盘点' }
       }
     ]
