@@ -12,6 +12,9 @@
         :loading="loading"
         :pagination="pagination"
         :bordered="false"
+        :bottom-bordered="true"
+        striped
+        size="large"
       />
     </n-card>
 
