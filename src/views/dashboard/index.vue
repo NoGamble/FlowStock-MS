@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeVars, useMessage } from 'naive-ui'
 import { getProductList } from '@/api/product'
@@ -124,10 +124,10 @@ const message = useMessage()
 
 // 1. 顶部统计数据
 const statsCards = ref([
-  { title: '商品总种类 (种)', value: 0, trend: 0, icon: CubeOutline, color: '#2080f0', bgColor: '#e6f3fc' },
-  { title: '总计库存 (件)', value: 0, trend: 0, icon: ClipboardOutline, color: '#18a058', bgColor: '#e7f5ee' },
-  { title: '近期入库参考', value: 0, trend: 0, icon: LogInOutline, color: '#f0a020', bgColor: '#fdf5e8' },
-  { title: '近期出库参考', value: 0, trend: 0, icon: LogOutOutline, color: '#d03050', bgColor: '#fbebef' },
+  { title: '商品总种类 (种)', value: 0, trend: 0, icon: markRaw(CubeOutline), color: '#2080f0', bgColor: '#e6f3fc' },
+  { title: '总计库存 (件)', value: 0, trend: 0, icon: markRaw(ClipboardOutline), color: '#18a058', bgColor: '#e7f5ee' },
+  { title: '近期入库参考', value: 0, trend: 0, icon: markRaw(LogInOutline), color: '#f0a020', bgColor: '#fdf5e8' },
+  { title: '近期出库参考', value: 0, trend: 0, icon: markRaw(LogOutOutline), color: '#d03050', bgColor: '#fbebef' },
 ])
 
 // 获取真实数据并更新仪表盘
