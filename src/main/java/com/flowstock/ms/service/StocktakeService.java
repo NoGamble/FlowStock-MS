@@ -1,10 +1,12 @@
 package com.flowstock.ms.service;
 
+import com.flowstock.ms.dto.StocktakeResponse;
 import com.flowstock.ms.entity.*;
 import com.flowstock.ms.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StocktakeService {
@@ -49,9 +51,12 @@ public class StocktakeService {
      * Retrieve all stocktake history for auditing.
      * @return List of all stocktake records.
      */
-    public List<StocktakeRecord> getAllStocktakeRecords() {
+
+    /*
+        public List<StocktakeRecord> getAllStocktakeRecords() {
         return stocktakeRecordRepository.findAll();
     }
+    */
 
     /**
      * Delete a stocktake record.
@@ -60,5 +65,27 @@ public class StocktakeService {
      */
     public void deleteStocktakeRecord(Long recordId) {
         stocktakeRecordRepository.deleteById(recordId);
+    }
+
+    public List<StocktakeResponse> getAllStocktakeRecords() {
+        return stocktakeRecordRepository.findAll().stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+    private StocktakeResponse convertToResponseDTO(StocktakeRecord record) {
+        StocktakeResponse dto = new StocktakeResponse();
+        dto.setId(record.getId());
+        dto.setSystemQuantity(record.getSystemQuantity());
+        dto.setActualQuantity(record.getActualQuantity());
+        dto.setDiffQuantity(record.getDiffQuantity());
+        // 注意：根据你之前的图片，字段名是 stocktakeTime
+        dto.setStocktakeTime(record.getStocktakeTime());
+
+        if (record.getInventory() != null) {
+            Inventory inventory = record.getInventory();
+            dto.setItemId(inventory.getId());
+            dto.setItemName(inventory.getItemName());
+        }
+        return dto;
     }
 }
