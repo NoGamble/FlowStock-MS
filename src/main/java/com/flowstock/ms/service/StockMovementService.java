@@ -43,6 +43,8 @@ public class StockMovementService {
     /**
      * Update an existing inbound record.
      * Adjusts the inventory by calculating the difference between old and new amounts.
+     * @param recordId the ID of the record you wanna update
+     * @param newAmount the new amount to update the record
      */
     @Transactional
     public void updateInboundRecord(Long recordId, Integer newAmount) {
@@ -60,6 +62,9 @@ public class StockMovementService {
         inboundRecordRepository.save(record);
     }
 
+    /**
+     * Core Logic: Get all inbound records
+     */
     public List<InboundRecord> getAllInboundRecords() {
         return inboundRecordRepository.findAll();
     }
@@ -90,6 +95,7 @@ public class StockMovementService {
 
     /**
      * Cancel/Delete an outbound record and roll back the stock.
+     * @param recordId the ID of the record you wanna delete
      */
     @Transactional
     public void deleteOutboundRecord(Long recordId) {
@@ -104,6 +110,9 @@ public class StockMovementService {
         outboundRecordRepository.delete(record);
     }
 
+    /**
+     * Core Logic: Get all outbound records
+     */
     public List<OutboundRecord> getAllOutboundRecords() {
         return outboundRecordRepository.findAll();
     }

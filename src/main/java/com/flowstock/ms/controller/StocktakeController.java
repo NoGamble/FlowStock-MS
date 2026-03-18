@@ -1,5 +1,6 @@
 package com.flowstock.ms.controller;
 
+import com.flowstock.ms.dto.StocktakeResponse;
 import com.flowstock.ms.entity.StocktakeRecord;
 import com.flowstock.ms.service.StocktakeService;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class StocktakeController {
     }
 
     @GetMapping
-    public List<StocktakeRecord> list(){
+    public List<StocktakeResponse> list(){
         return stocktakeService.getAllStocktakeRecords();
     }
 
