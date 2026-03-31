@@ -1,5 +1,6 @@
 package com.flowstock.ms.controller;
 
+import com.flowstock.ms.dto.Result;
 import com.flowstock.ms.dto.StocktakeResponse;
 import com.flowstock.ms.entity.StocktakeRecord;
 import com.flowstock.ms.service.StocktakeService;
@@ -16,19 +17,20 @@ public class StocktakeController {
     }
 
     @PostMapping
-    public String execute(@RequestParam Long itemId, @RequestParam Integer actualQuantity){
+    public Result<Void> execute(@RequestParam Long itemId, @RequestParam Integer actualQuantity){
         stocktakeService.executeStocktake(itemId, actualQuantity);
-        return "Stocktake completed. Inventory has been synchronized with physical count.";
+        return Result.success();
     }
 
     @GetMapping
-    public List<StocktakeResponse> list(){
-        return stocktakeService.getAllStocktakeRecords();
+    public Result<List<StocktakeResponse>> list(){
+        List<StocktakeResponse> records = stocktakeService.getAllStocktakeRecords();
+        return Result.success(records);
     }
 
     @DeleteMapping("/{recordId}")
-    public String delete(@PathVariable Long recordId){
+    public Result<Void> delete(@PathVariable Long recordId){
         stocktakeService.deleteStocktakeRecord(recordId);
-        return "Stocktake record #" + recordId + " has been removed from history.";
+        return Result.success();
     }
 }

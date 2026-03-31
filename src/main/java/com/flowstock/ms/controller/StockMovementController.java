@@ -1,6 +1,7 @@
 package com.flowstock.ms.controller;
 
 import com.flowstock.ms.dto.MovementRequest;
+import com.flowstock.ms.dto.Result;
 import com.flowstock.ms.entity.Inventory;
 import com.flowstock.ms.service.ProductService;
 import com.flowstock.ms.service.StockMovementService;
@@ -18,25 +19,27 @@ public class StockMovementController {
     }
 
     @PostMapping("/inbound")
-    public String inbound(@RequestBody MovementRequest request){
+    public Result<Void> inbound(@RequestBody MovementRequest request){
         movementService.processInbound(request.getItemId(), request.getAmount());
-        return "Inbound processed successfully!";
+        // 返回统一的成功状态，信息已经在 Result 类里默认设为“操作成功”
+        return Result.success();
     }
+
     @PutMapping("/inbound/{recordId}")
-    public String updateInbound(@PathVariable Long recordId, @RequestBody Integer newAmount) {
+    public Result<Void> updateInbound(@PathVariable Long recordId, @RequestBody Integer newAmount) {
         movementService.updateInboundRecord(recordId, newAmount);
-        return "Inbound record updated and stock adjusted!";
+        return Result.success();
     }
 
     @PostMapping("/outbound")
-    public String outbound(@RequestBody MovementRequest request){
+    public Result<Void> outbound(@RequestBody MovementRequest request){
         movementService.processOutbound(request.getItemId(), request.getAmount());
-        return "Outbound processed successfully!";
+        return Result.success();
     }
 
     @DeleteMapping("/outbound/{recordId}")
-    public String cancelOutbound(@PathVariable Long recordId){
+    public Result<Void> cancelOutbound(@PathVariable Long recordId){
         movementService.deleteOutboundRecord(recordId);
-        return "Outbound Record cancelled and stock rolled back!";
+        return Result.success();
     }
 }

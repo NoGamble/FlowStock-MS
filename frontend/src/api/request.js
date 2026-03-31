@@ -5,7 +5,6 @@ import axios from 'axios'
 // 更好的做法是在 Vue 插件中注入专门处理的方法，这里提供基础 Axios 拦截
 
 const service = axios.create({
-  // Vite 配置的 proxy 前缀
   baseURL: '',
   timeout: 15000 
 })
@@ -27,14 +26,21 @@ service.interceptors.request.use(
 
 // 响应拦截器
 service.interceptors.response.use(
-  response => {
-    // Spring Boot 如果直接返回普通对象或字符串，这里直接将其解出即可
-    return response.data;
-  },
-  error => {
-    console.error('API Error:', error)
-    return Promise.reject(error)
-  }
+    response => {
+      const res = response.data;
+
+      if (res.code !== 200) {
+        alert(res.message || '执行出错');
+
+        return Promise.reject(new Error(res.message || 'Error'));
+      }
+      return res.data;
+    },
+    error => {
+      console.error('网络请求异常:', error);
+      alert('网络连接失败，请检查后端服务是否启动');
+      return Promise.reject(error);
+    }
 )
 
 export default service

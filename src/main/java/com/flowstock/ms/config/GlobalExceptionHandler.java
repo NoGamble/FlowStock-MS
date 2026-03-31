@@ -1,11 +1,13 @@
 package com.flowstock.ms.config;
 
+import com.flowstock.ms.dto.Result;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.transaction.TransactionSystemException;
 
-// 这个注解告诉 Spring：这个类是全局的异常“捕获站”
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -14,9 +16,8 @@ public class GlobalExceptionHandler {
      * 当两个管理员同时改一个商品，JPA 抛出乐观锁异常时，执行这里
      */
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-    public String handleConcurrencyError() {
-        // 返回给前端的提示，前端可以直接弹窗显示
-        return "【系统提示】该商品数据刚刚被他人修改过，请刷新页面后再试。";
+    public Result<Void> handleOptimisticLock(ObjectOptimisticLockingFailureException e) {
+        return Result.error(409, "数据已被他人修改，请刷新页面重试");
     }
 
     /**
@@ -24,9 +25,8 @@ public class GlobalExceptionHandler {
      * 比如：“库存不足”、“找不到 ID” 等业务提示
      */
     @ExceptionHandler(RuntimeException.class)
-    public String handleBusinessError(RuntimeException e) {
-        // 这里的 e.getMessage() 就是你在 Service 里写的报错字符串
-        return "【业务逻辑错误】" + e.getMessage();
+    public Result<Void> handleRuntime(RuntimeException e) {
+        return Result.error(500, e.getMessage());
     }
 
     /**
@@ -34,16 +34,14 @@ public class GlobalExceptionHandler {
      * 这是一个“保底”方案，防止后端直接崩掉把代码堆栈吐给用户
      */
     @ExceptionHandler(Exception.class)
-    public String handleGeneralError(Exception e) {
-        e.printStackTrace(); // 程序员在后台控制台能看到错在哪
-        return "【系统异常】服务器冒烟了，请联系管理员查看日志。";
+    public Result<Void> handleException(Exception e) {
+        e.printStackTrace(); // 记得打印日志，方便你调试
+        return Result.error(500, "系统未知错误，请联系管理员");
     }
 
     // 处理死锁
     @ExceptionHandler(CannotAcquireLockException.class)
-    public String handleDeadlockException(CannotAcquireLockException e) {
-        // 打印简要日志方便排查
-        System.err.println("Database Deadlock detected: " + e.getMessage());
-        return "【系统繁忙】当前操作的人数较多，请稍后重试。";
+    public Result<Void> handleDeadlock(CannotAcquireLockException e) {
+        return Result.error(408, "服务器繁忙（锁竞争），请稍后重试");
     }
 }

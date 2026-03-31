@@ -1,5 +1,6 @@
 package com.flowstock.ms.controller;
 
+import com.flowstock.ms.dto.Result;
 import com.flowstock.ms.entity.Inventory;
 import com.flowstock.ms.repository.InventoryRepository;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,8 @@ public class InventoryController {
     }
 
     @GetMapping
-    public List<Inventory> getAllInventory() {
-        return inventoryRepository.findAll();
+    public Result<List<Inventory>> getAllInventory() {
+        List<Inventory> list = inventoryRepository.findAll();
+        return Result.success(list);
     }
 }

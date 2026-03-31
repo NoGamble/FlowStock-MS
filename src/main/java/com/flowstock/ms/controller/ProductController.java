@@ -1,5 +1,6 @@
 package com.flowstock.ms.controller;
 
+import com.flowstock.ms.dto.Result;
 import com.flowstock.ms.repository.*;
 import com.flowstock.ms.service.*;
 import com.flowstock.ms.entity.*;
@@ -20,23 +21,24 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Inventory> list() {
-        return productService.getAllProducts();
+    public Result<List<Inventory>> list() {
+        return Result.success(productService.getAllProducts());
     }
 
     @PostMapping
-    public Inventory create(@RequestBody Inventory product){
-        return productService.createProduct(product);
+    public Result<Inventory> create(@RequestBody Inventory product){
+        return Result.success(productService.createProduct(product));
     }
 
     @PutMapping("/{id}")
-    public Inventory update(@PathVariable Long id, @RequestBody Inventory details){
-        return productService.updateProduct(id, details);
+    public Result<Inventory> update(@PathVariable Long id, @RequestBody Inventory details){
+        return Result.success(productService.updateProduct(id, details));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id){
+    public Result<Void> delete(@PathVariable Long id){
         productService.deleteProduct(id);
+        return Result.success();
     }
 
 }
