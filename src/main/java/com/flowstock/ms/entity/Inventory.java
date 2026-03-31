@@ -24,4 +24,6 @@ public class Inventory {
     @Column(name = "unit")
     private String unit;
 
+    @Version
+    private Integer version;
 }
