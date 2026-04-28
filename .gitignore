@@ -64,3 +64,4 @@ frontend/coverage/
 
 backend.log
 .worktrees/
+.claude/

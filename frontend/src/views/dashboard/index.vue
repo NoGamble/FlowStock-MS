@@ -208,8 +208,9 @@ const pieOption = ref({
   border-radius: 10px;
   padding: 20px;
 }
-.chart-trend { flex: 2; }
+.chart-trend { flex: 2; display: flex; flex-direction: column; }
 .chart-pie { flex: 1; display: flex; flex-direction: column; }
+.chart { width: 100%; flex: 1; min-height: 280px; overflow: hidden; }
 .chart-header {
   display: flex;
   align-items: center;
@@ -222,7 +223,6 @@ const pieOption = ref({
   color: #1a1a2e;
   margin: 0;
 }
-.chart { width: 100%; flex: 1; min-height: 280px; }
 .low-stock {
   margin-top: 12px;
   border-top: 1px solid #f0f0f0;

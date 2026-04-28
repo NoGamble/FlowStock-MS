@@ -1,190 +1,158 @@
 <template>
   <div class="inbound-page">
-    <h2 class="page-title">入库操作台</h2>
-
-    <div class="split-panel">
-      <div class="panel-left">
-        <n-input
-          v-model:value="searchQuery"
-          placeholder="搜索商品..."
-          clearable
-          style="margin-bottom: 12px;"
-        >
-          <template #prefix><n-icon :component="SearchOutline" /></template>
-        </n-input>
-        <n-data-table
-          :columns="productColumns"
-          :data="filteredProducts"
-          :loading="loading"
-          :pagination="{ pageSize: 8 }"
-          :bordered="false"
-          size="small"
-          :row-props="rowProps"
-        />
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-num">{{ tableData.length }}</div>
+        <div class="stat-desc">可入库商品</div>
       </div>
-
-      <div class="panel-right">
-        <div class="op-panel" v-if="selectedProduct">
-          <div class="op-header">
-            <n-tag type="info" :bordered="false">正在操作</n-tag>
-            <span class="op-product-name">{{ selectedProduct.itemName }}</span>
-          </div>
-          <div class="op-stock-info">
-            当前库存：<strong>{{ selectedProduct.currentQuantity }}</strong>
-          </div>
-
-          <div class="op-input-area">
-            <n-input-number
-              v-model:value="inboundAmount"
-              :min="1"
-              placeholder="入库数量"
-              style="width: 100%;"
-              size="large"
-            />
-            <div class="quick-btns">
-              <n-button size="small" @click="addAmount(10)">+10</n-button>
-              <n-button size="small" @click="addAmount(50)">+50</n-button>
-              <n-button size="small" @click="addAmount(100)">+100</n-button>
-            </div>
-          </div>
-
-          <div class="op-preview" v-if="inboundAmount > 0">
-            库存变化：
-            <span class="preview-from">{{ selectedProduct.currentQuantity }}</span>
-            <n-icon :component="ArrowForwardOutline" size="14" />
-            <span class="preview-to">{{ selectedProduct.currentQuantity + inboundAmount }}</span>
-          </div>
-
-          <n-button
-            type="primary"
-            block
-            :loading="submitting"
-            @click="executeInbound"
-            style="margin-top: 12px;"
-          >
-            确认入库 {{ inboundAmount }} 件
-          </n-button>
-        </div>
-
-        <div class="op-panel op-empty" v-else>
-          <n-empty description="点击左侧商品开始入库" style="padding: 40px 0;" />
-        </div>
-
-        <div class="history-section">
-          <div class="history-header">最近入库记录</div>
-          <div class="history-list" v-if="recentRecords.length">
-            <div class="history-item" v-for="r in recentRecords" :key="r.id">
-              <span class="history-name">{{ r.inventory?.itemName || '—' }}</span>
-              <span class="history-qty">+{{ r.quantity }}</span>
-              <span class="history-time">{{ formatTime(r.inboundTime) }}</span>
-            </div>
-          </div>
-          <n-empty v-else description="暂无记录" size="small" style="padding: 20px 0;" />
-        </div>
+      <div class="stat-divider" />
+      <div class="stat-item">
+        <div class="stat-num">{{ totalStock }}</div>
+        <div class="stat-desc">库存总量</div>
+      </div>
+      <div class="stat-divider" />
+      <div class="stat-item stat-warn">
+        <div class="stat-num">{{ lowStockCount }}</div>
+        <div class="stat-desc">库存告急</div>
       </div>
     </div>
+
+    <div class="table-toolbar">
+      <div class="toolbar-left">
+        <h2 class="page-title">入库操作台</h2>
+        <n-input
+          v-model:value="searchQuery"
+          placeholder="搜索名称或 SKU..."
+          clearable
+          class="search-input"
+        >
+          <template #prefix>
+            <n-icon :component="SearchOutline" />
+          </template>
+        </n-input>
+      </div>
+      <n-button type="info" secondary @click="fetchData">刷新</n-button>
+    </div>
+
+    <n-data-table
+      :columns="columns"
+      :data="filteredData"
+      :loading="loading"
+      :pagination="pagination"
+      :bordered="false"
+      :bottom-bordered="true"
+      striped
+      size="large"
+    >
+      <template #empty>
+        <n-empty description="暂无商品数据">
+          <template #extra>
+            <n-button type="primary" @click="$router.push('/product')">去新增商品</n-button>
+          </template>
+        </n-empty>
+      </template>
+    </n-data-table>
+
+    <n-modal v-model:show="showModal" preset="card" title="商品入库" style="width: 420px;">
+      <template v-if="selectedRow">
+        <div class="modal-product-info">
+          <span class="mpi-name">{{ selectedRow.itemName }}</span>
+          <n-tag :type="selectedRow.currentQuantity <= 10 ? 'error' : 'success'" size="small" round>
+            当前库存 {{ selectedRow.currentQuantity }} 件
+          </n-tag>
+        </div>
+        <div class="mpi-preview" v-if="formData.amount > 0">
+          <span class="mpi-arrow">{{ selectedRow.currentQuantity }}</span>
+          <span class="mpi-arrow-icon">→</span>
+          <span class="mpi-after">{{ selectedRow.currentQuantity + formData.amount }}</span>
+          <span class="mpi-diff">(+{{ formData.amount }})</span>
+        </div>
+      </template>
+
+      <n-form ref="formRef" :model="formData" :rules="rules" label-placement="top" style="margin-top: 16px;">
+        <n-form-item label="入库数量" path="amount">
+          <n-input-number v-model:value="formData.amount" :min="1" placeholder="请输入此次入库数量" style="width: 100%;" />
+        </n-form-item>
+        <div class="quick-btns">
+          <n-button size="tiny" secondary @click="formData.amount += 10">+10</n-button>
+          <n-button size="tiny" secondary @click="formData.amount += 50">+50</n-button>
+          <n-button size="tiny" secondary @click="formData.amount += 100">+100</n-button>
+        </div>
+      </n-form>
+
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showModal = false">取消</n-button>
+          <n-button type="primary" :loading="submitLoading" @click="handleSubmit">确认入库</n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 
 <script setup>
 import { ref, h, onMounted, computed } from 'vue'
-import { NButton, useMessage, NIcon, NTag } from 'naive-ui'
-import { SearchOutline, ArrowForwardOutline } from '@vicons/ionicons5'
+import { NButton, NSpace, useMessage, NIcon, NTag } from 'naive-ui'
+import { LogInOutline, SearchOutline } from '@vicons/ionicons5'
 import { getProductList } from '@/api/product'
 import { inboundAction } from '@/api/movement'
 
 const message = useMessage()
 const loading = ref(false)
-const products = ref([])
+const tableData = ref([])
 const searchQuery = ref('')
-const selectedProduct = ref(null)
-const inboundAmount = ref(1)
-const submitting = ref(false)
-const recentRecords = ref([])
+const pagination = ref({ pageSize: 10 })
 
-const filteredProducts = computed(() => {
-  if (!searchQuery.value) return products.value
+const totalStock = computed(() =>
+  tableData.value.reduce((sum, p) => sum + (p.currentQuantity || 0), 0)
+)
+const lowStockCount = computed(() =>
+  tableData.value.filter(p => (p.currentQuantity || 0) <= 10).length
+)
+
+const filteredData = computed(() => {
+  if (!searchQuery.value) return tableData.value
   const q = searchQuery.value.toLowerCase()
-  return products.value.filter(p => (p.itemName || '').toLowerCase().includes(q))
+  return tableData.value.filter(row =>
+    (row.itemName || '').toLowerCase().includes(q) ||
+    (row.skuCode || '').toLowerCase().includes(q)
+  )
 })
 
-const productColumns = [
-  { title: '商品名称', key: 'itemName', ellipsis: { tooltip: true } },
+const columns = [
+  { title: 'ID', key: 'id', width: 60 },
+  { title: 'SKU 编码', key: 'skuCode', width: 150, ellipsis: { tooltip: true } },
+  { title: '商品名称', key: 'itemName', width: 200, ellipsis: { tooltip: true } },
   {
-    title: '库存', key: 'currentQuantity', width: 80,
+    title: '当前库存', key: 'currentQuantity', width: 130,
     render(row) {
-      if (row.currentQuantity <= 10)
-        return h(NTag, { type: 'error', size: 'small', round: true }, { default: () => row.currentQuantity })
+      if (row.currentQuantity <= 10) {
+        return h(NTag, { type: 'error', size: 'small', round: true }, { default: () => row.currentQuantity + ' (告急)' })
+      }
       return h(NTag, { type: 'success', size: 'small', round: true }, { default: () => row.currentQuantity })
     }
   },
+  { title: '单位', key: 'unit', width: 70 },
   {
-    title: '', key: 'action', width: 80,
+    title: '操作', key: 'actions', width: 120,
     render(row) {
-      return h(NButton, {
-        size: 'small',
-        type: row.id === selectedProduct.value?.id ? 'primary' : 'default',
-        onClick: () => { selectedProduct.value = row; inboundAmount.value = 1 }
-      }, { default: () => '入库' })
+      return h(
+        NButton,
+        { size: 'small', type: 'primary', onClick: () => openModal(row) },
+        {
+          default: () => '办理入库',
+          icon: () => h(NIcon, null, { default: () => h(LogInOutline) })
+        }
+      )
     }
   }
 ]
-
-function rowProps(row) {
-  return {
-    style: row.id === selectedProduct.value?.id ? 'background: #e8f0fe;' : ''
-  }
-}
-
-function addAmount(n) { inboundAmount.value += n }
-
-const executeInbound = async () => {
-  if (!selectedProduct.value) return
-  submitting.value = true
-  try {
-    await inboundAction({ itemId: selectedProduct.value.id, amount: inboundAmount.value })
-    message.success(`成功入库 ${inboundAmount.value} 件 ${selectedProduct.value.itemName}`)
-
-    recentRecords.value.unshift({
-      id: Date.now(),
-      inventory: { itemName: selectedProduct.value.itemName },
-      quantity: inboundAmount.value,
-      inboundTime: new Date().toISOString()
-    })
-    if (recentRecords.value.length > 10) recentRecords.value.pop()
-
-    const idx = products.value.findIndex(p => p.id === selectedProduct.value.id)
-    if (idx >= 0) {
-      products.value[idx] = {
-        ...products.value[idx],
-        currentQuantity: products.value[idx].currentQuantity + inboundAmount.value
-      }
-    }
-    if (selectedProduct.value) {
-      selectedProduct.value = {
-        ...selectedProduct.value,
-        currentQuantity: selectedProduct.value.currentQuantity + inboundAmount.value
-      }
-    }
-
-    inboundAmount.value = 1
-  } catch (err) {
-    message.error('入库操作失败')
-  } finally {
-    submitting.value = false
-  }
-}
-
-function formatTime(t) {
-  if (!t) return ''
-  return t.replace('T', ' ').substring(0, 19)
-}
 
 const fetchData = async () => {
   loading.value = true
   try {
     const res = await getProductList()
-    products.value = res || []
+    tableData.value = res || []
   } catch (err) {
     message.error('获取商品列表失败')
   } finally {
@@ -192,114 +160,118 @@ const fetchData = async () => {
   }
 }
 
+const showModal = ref(false)
+const submitLoading = ref(false)
+const formRef = ref(null)
+const selectedRow = ref(null)
+const formData = ref({ amount: 1 })
+const rules = { amount: { type: 'number', required: true, message: '请输入入库数量', trigger: 'blur' } }
+
+const openModal = (row) => {
+  selectedRow.value = row
+  formData.value.amount = 1
+  showModal.value = true
+}
+
+const handleSubmit = (e) => {
+  e.preventDefault()
+  formRef.value?.validate(async (errors) => {
+    if (!errors) {
+      submitLoading.value = true
+      try {
+        await inboundAction({ itemId: selectedRow.value.id, amount: formData.value.amount })
+        message.success(`成功入库 ${formData.value.amount} 件 ${selectedRow.value.itemName}`)
+        showModal.value = false
+        fetchData()
+      } catch (error) {
+        message.error('入库操作失败')
+      } finally {
+        submitLoading.value = false
+      }
+    }
+  })
+}
+
 onMounted(() => fetchData())
 </script>
 
 <style scoped>
-.inbound-page {
-  padding-top: 24px;
-  height: calc(100vh - 24px);
+.inbound-page { padding-top: 24px; }
+
+/* --- stat strip --- */
+.stat-strip {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.stat-item { flex: 1; }
+.stat-num {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-desc {
+  font-size: 13px;
+  color: #999;
+}
+.stat-warn .stat-num { color: #d03050; }
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: #f0f0f0;
+}
+
+/* --- toolbar --- */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .page-title {
   font-size: 18px;
   font-weight: 600;
   color: #1a1a2e;
-  margin: 0 0 16px;
-  flex-shrink: 0;
+  margin: 0;
 }
-.split-panel {
-  display: flex;
-  gap: 16px;
-  flex: 1;
-  min-height: 0;
-}
-.panel-left {
-  flex: 3;
-  background: #fff;
-  border-radius: 10px;
-  padding: 16px;
-  overflow: auto;
-}
-.panel-right {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 320px;
-}
-.op-panel {
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
-}
-.op-header {
+.search-input { width: 240px; }
+
+/* --- modal --- */
+.modal-product-info {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #f9fafb;
+  border-radius: 8px;
 }
-.op-product-name {
-  font-weight: 600;
-  font-size: 16px;
-  color: #1a1a2e;
-}
-.op-stock-info {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 16px;
-}
-.op-input-area {
+.mpi-name { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+.mpi-preview {
   display: flex;
+  align-items: center;
   gap: 8px;
-  align-items: flex-start;
-}
-.quick-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.op-preview {
   margin-top: 12px;
-  font-size: 14px;
-  color: #555;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.preview-from { color: #999; font-weight: 500; }
-.preview-to { color: #18a058; font-weight: 700; font-size: 18px; }
-.op-empty {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.history-section {
-  background: #fff;
-  border-radius: 10px;
-  padding: 16px;
-  flex: 1;
-  overflow: auto;
-}
-.history-header {
-  font-size: 13px;
+  padding: 10px 16px;
+  background: #e8f0fe;
+  border-radius: 8px;
+  font-size: 18px;
   font-weight: 600;
-  color: #888;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
-.history-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
-  font-size: 13px;
-}
-.history-name { flex: 1; color: #333; }
-.history-qty { color: #18a058; font-weight: 600; }
-.history-time { color: #aaa; font-size: 12px; white-space: nowrap; }
+.mpi-arrow { color: #666; }
+.mpi-arrow-icon { color: #999; font-size: 14px; }
+.mpi-after { color: #0052D9; }
+.mpi-diff { color: #18a058; font-size: 13px; }
+.quick-btns { display: flex; gap: 8px; margin-top: 4px; }
 </style>

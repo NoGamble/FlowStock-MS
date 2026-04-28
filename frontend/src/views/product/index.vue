@@ -1,23 +1,40 @@
 <template>
   <div class="product-page">
-    <div class="page-top">
-      <h2 class="page-title">商品管理</h2>
-      <div class="top-actions">
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-num">{{ tableData.length }}</div>
+        <div class="stat-desc">商品种类</div>
+      </div>
+      <div class="stat-divider" />
+      <div class="stat-item">
+        <div class="stat-num">{{ totalStock }}</div>
+        <div class="stat-desc">库存总量</div>
+      </div>
+      <div class="stat-divider" />
+      <div class="stat-item stat-warn">
+        <div class="stat-num">{{ lowStockCount }}</div>
+        <div class="stat-desc">低库存预警</div>
+      </div>
+    </div>
+
+    <div class="table-toolbar">
+      <div class="toolbar-left">
+        <h2 class="page-title">商品管理</h2>
         <n-input
           v-model:value="searchQuery"
-          placeholder="搜索商品名称或 SKU..."
+          placeholder="搜索名称或 SKU..."
           clearable
-          style="width: 260px;"
+          class="search-input"
         >
           <template #prefix>
             <n-icon :component="SearchOutline" />
           </template>
         </n-input>
-        <n-button type="primary" @click="openCreateModal">
-          <template #icon><n-icon :component="AddOutline" /></template>
-          新增商品
-        </n-button>
       </div>
+      <n-button type="primary" @click="openCreateModal">
+        <template #icon><n-icon :component="AddOutline" /></template>
+        新增商品
+      </n-button>
     </div>
 
     <n-data-table
@@ -76,6 +93,13 @@ const tableData = ref([])
 const searchQuery = ref('')
 const pagination = ref({ pageSize: 10 })
 
+const totalStock = computed(() =>
+  tableData.value.reduce((sum, p) => sum + (p.currentQuantity || 0), 0)
+)
+const lowStockCount = computed(() =>
+  tableData.value.filter(p => (p.currentQuantity || 0) <= 10).length
+)
+
 const filteredData = computed(() => {
   if (!searchQuery.value) return tableData.value
   const q = searchQuery.value.toLowerCase()
@@ -93,10 +117,10 @@ function stockTag(quantity) {
 
 const columns = [
   { title: 'ID', key: 'id', width: 60 },
-  { title: 'SKU 编码', key: 'skuCode', width: 140, ellipsis: { tooltip: true } },
-  { title: '商品名称', key: 'itemName', ellipsis: { tooltip: true } },
+  { title: 'SKU 编码', key: 'skuCode', width: 150, ellipsis: { tooltip: true } },
+  { title: '商品名称', key: 'itemName', width: 220, ellipsis: { tooltip: true } },
   {
-    title: '库存量', key: 'currentQuantity', width: 100,
+    title: '库存量', key: 'currentQuantity', width: 110,
     render(row) { return stockTag(row.currentQuantity) }
   },
   { title: '单位', key: 'unit', width: 70 },
@@ -206,11 +230,48 @@ onMounted(() => fetchData())
 
 <style scoped>
 .product-page { padding-top: 24px; }
-.page-top {
+
+/* --- stat strip --- */
+.stat-strip {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.stat-item { flex: 1; }
+.stat-num {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-desc {
+  font-size: 13px;
+  color: #999;
+}
+.stat-warn .stat-num { color: #d03050; }
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: #f0f0f0;
+}
+
+/* --- toolbar --- */
+.table-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+}
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .page-title {
   font-size: 18px;
@@ -218,9 +279,5 @@ onMounted(() => fetchData())
   color: #1a1a2e;
   margin: 0;
 }
-.top-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
+.search-input { width: 240px; }
 </style>
