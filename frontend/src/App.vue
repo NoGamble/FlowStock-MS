@@ -12,13 +12,18 @@
 </template>
 
 <script setup>
-// 定制全局主题颜色，提升系统颜值
 const themeOverrides = {
   common: {
-    primaryColor: '#0052D9', // 使用经典的科技蓝/可信蓝
+    primaryColor: '#0052D9',
     primaryColorHover: '#266FE8',
     primaryColorPressed: '#003CAB',
-    borderRadius: '6px' // 增加全局圆角
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif'
+  },
+  Card: {
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)'
   }
 }
 </script>
