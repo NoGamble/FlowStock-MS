@@ -1,9 +1,11 @@
 spring:
   application:
     name: FlowStock-MS
+  config:
+    import: optional:classpath:application-local.yaml
   datasource:
     url: jdbc:mysql://localhost:3306/flowstock_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&useSSL=false
-    username: root
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
