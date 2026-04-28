@@ -63,3 +63,4 @@ frontend/dist-ssr/
 frontend/coverage/
 
 backend.log
+.worktrees/
