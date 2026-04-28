@@ -37,7 +37,6 @@ backend.log
 .springBeans
 .sts4-cache
 .vscode/
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
