@@ -1,204 +1,128 @@
 <template>
-  <div class="page-container">
-    <!-- 顶部数据统计卡片 -->
-    <n-grid :x-gap="16" :y-gap="16" cols="1 s:2 m:4" responsive="screen">
-      <n-grid-item v-for="(stat, index) in statsCards" :key="index">
-        <n-card class="stat-card" hoverable>
-          <div class="stat-content">
-            <div class="stat-info">
-              <div class="stat-title">{{ stat.title }}</div>
-              <div class="stat-value">
-                <n-number-animation :from="0" :to="stat.value" />
-              </div>
-              <div class="stat-trend" :class="stat.trend > 0 ? 'up' : 'down'">
-                <n-icon :component="stat.trend > 0 ? ArrowUpOutline : ArrowDownOutline" />
-                <span>{{ Math.abs(stat.trend) }}% 较上周</span>
-              </div>
-            </div>
-            <div class="stat-icon" :style="{ backgroundColor: stat.bgColor, color: stat.color }">
-              <n-icon size="28" :component="stat.icon" />
-            </div>
+  <div class="dashboard">
+    <div class="metric-strip">
+      <div class="metric-item" v-for="m in metrics" :key="m.label">
+        <div class="metric-label">{{ m.label }}</div>
+        <div class="metric-value">
+          <n-number-animation :from="0" :to="m.value" />
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box chart-trend">
+        <div class="chart-header">
+          <h3 class="chart-title">出入库动态趋势</h3>
+          <n-tag size="small" type="default" :bordered="false">演示数据</n-tag>
+        </div>
+        <v-chart class="chart" :option="trendOption" autoresize />
+      </div>
+      <div class="chart-box chart-pie">
+        <div class="chart-header">
+          <h3 class="chart-title">库存分类占比</h3>
+        </div>
+        <v-chart class="chart" :option="pieOption" autoresize />
+        <div class="low-stock" v-if="warningItems.length">
+          <div class="low-stock-header">低库存预警</div>
+          <div
+            class="low-stock-item"
+            v-for="item in warningItems"
+            :key="item.id"
+            @click="router.push('/inbound')"
+          >
+            <span class="low-stock-name">{{ item.name }}</span>
+            <span class="low-stock-count">仅剩 {{ item.stock }} 件</span>
           </div>
-        </n-card>
-      </n-grid-item>
-    </n-grid>
+        </div>
+      </div>
+    </div>
 
-    <!-- 中间图表区 -->
-    <n-grid :x-gap="16" :y-gap="16" cols="1 m:3" responsive="screen" style="margin-top: 16px;">
-      <!-- 左侧：近7天出入库趋势 (占 2 份宽度) -->
-      <n-grid-item span="2">
-        <n-card title="出入库动态趋势" class="chart-card" hoverable>
-          <v-chart class="chart" :option="trendOption" autoresize />
-        </n-card>
-      </n-grid-item>
-
-      <!-- 右侧：库存占比分布 (占 1 份宽度) -->
-      <n-grid-item span="1">
-        <n-card title="库存分类占比" class="chart-card" hoverable>
-          <v-chart class="chart" :option="pieOption" autoresize />
-        </n-card>
-      </n-grid-item>
-    </n-grid>
-
-    <!-- 底部功能与预警 -->
-    <n-grid :x-gap="16" :y-gap="16" cols="1 m:2" responsive="screen" style="margin-top: 16px;">
-      <!-- 快捷操作 -->
-      <n-grid-item>
-        <n-card title="从这里开始" class="action-card" hoverable>
-          <n-grid :x-gap="12" :y-gap="12" cols="2">
-            <n-grid-item v-for="action in fastActions" :key="action.name">
-              <n-button 
-                block 
-                secondary 
-                type="primary" 
-                size="large"
-                @click="router.push(action.path)"
-                class="action-btn"
-              >
-                <template #icon>
-                  <n-icon :component="action.icon" />
-                </template>
-                {{ action.name }}
-              </n-button>
-            </n-grid-item>
-          </n-grid>
-        </n-card>
-      </n-grid-item>
-
-      <!-- 库存预警 -->
-      <n-grid-item>
-        <n-card title="低库存预警" class="alert-card" hoverable header-style="color: #d03050;">
-          <template #header-extra>
-            <n-tag type="error" round size="small">需处理</n-tag>
-          </template>
-          <n-list hoverable clickable>
-            <n-list-item v-for="item in warningItems" :key="item.id">
-              <n-thing :title="item.name" :description="`编号：${item.code}`">
-                <template #avatar>
-                  <n-avatar color="#fff0f6" style="color: #d03050">警</n-avatar>
-                </template>
-              </n-thing>
-              <template #suffix>
-                <div style="text-align: right;">
-                  <div style="color: #d03050; font-weight: bold;">仅剩 {{ item.stock }} 件</div>
-                  <n-button text type="primary" size="small" style="margin-top: 4px;">立即补货</n-button>
-                </div>
-              </template>
-            </n-list-item>
-          </n-list>
-        </n-card>
-      </n-grid-item>
-    </n-grid>
+    <div class="quick-actions">
+      <div
+        class="quick-action-btn"
+        v-for="action in fastActions"
+        :key="action.name"
+        @click="router.push(action.path)"
+      >
+        <n-icon size="22" :component="action.icon" />
+        <span>{{ action.name }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
-import { useThemeVars, useMessage } from 'naive-ui'
+import { useMessage } from 'naive-ui'
 import { getProductList } from '@/api/product'
-import { 
-  CubeOutline, LogInOutline, LogOutOutline, ClipboardOutline,
-  ArrowUpOutline, ArrowDownOutline, AlertCircleOutline, AddCircleOutline
+import {
+  CubeOutline, LogInOutline, LogOutOutline, ClipboardOutline, AddCircleOutline
 } from '@vicons/ionicons5'
-
-// Echarts 按需引入
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, PieChart } from 'echarts/charts'
-import { 
-  TitleComponent, TooltipComponent, LegendComponent, 
-  GridComponent, DatasetComponent 
+import {
+  TitleComponent, TooltipComponent, LegendComponent,
+  GridComponent, DatasetComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 
-// 注册 ECharts 核心组件
 use([
   CanvasRenderer, LineChart, PieChart, GridComponent,
   TitleComponent, TooltipComponent, LegendComponent, DatasetComponent
 ])
 
 const router = useRouter()
-const themeVars = useThemeVars() // 获取 naive ui 当前主题色
 const message = useMessage()
 
-// 1. 顶部统计数据
-const statsCards = ref([
-  { title: '商品总种类 (种)', value: 0, trend: 0, icon: markRaw(CubeOutline), color: '#2080f0', bgColor: '#e6f3fc' },
-  { title: '总计库存 (件)', value: 0, trend: 0, icon: markRaw(ClipboardOutline), color: '#18a058', bgColor: '#e7f5ee' },
-  { title: '近期入库参考', value: 0, trend: 0, icon: markRaw(LogInOutline), color: '#f0a020', bgColor: '#fdf5e8' },
-  { title: '近期出库参考', value: 0, trend: 0, icon: markRaw(LogOutOutline), color: '#d03050', bgColor: '#fbebef' },
+const metrics = ref([
+  { label: '商品种类', value: 0 },
+  { label: '总库存 (件)', value: 0 },
+  { label: '今日入库', value: 0 },
+  { label: '今日出库', value: 0 }
 ])
 
-// 获取真实数据并更新仪表盘
+const warningItems = ref([])
+
+const fastActions = [
+  { name: '录入商品', path: '/product', icon: markRaw(AddCircleOutline) },
+  { name: '处理入库', path: '/inbound', icon: markRaw(LogInOutline) },
+  { name: '处理出库', path: '/outbound', icon: markRaw(LogOutOutline) },
+  { name: '发起盘点', path: '/stocktake', icon: markRaw(ClipboardOutline) }
+]
+
 const fetchDashboardData = async () => {
   try {
-    // 目前后端只有获取全量商品列表的接口可用，我们就用它来渲染“商品种类”、“总库存”和“库存饼图”“低库存预警”
     const products = await getProductList() || []
-    
-    // 1. 计算总卡片
-    const totalTypes = products.length
-    const totalStock = products.reduce((sum, item) => sum + (item.currentQuantity || 0), 0)
-    
-    statsCards.value[0].value = totalTypes // 商品总种类
-    statsCards.value[1].value = totalStock // 总件数
 
-    // 2. 更新库存饼图（取库存量排名前 5 的，其他的归为“其他”）
-    const sortedProducts = [...products].sort((a, b) => (b.currentQuantity || 0) - (a.currentQuantity || 0))
-    const top5 = sortedProducts.slice(0, 5)
+    metrics.value[0].value = products.length
+    metrics.value[1].value = products.reduce((sum, p) => sum + (p.currentQuantity || 0), 0)
+
+    const sorted = [...products].sort((a, b) => (b.currentQuantity || 0) - (a.currentQuantity || 0))
+    const top5 = sorted.slice(0, 5)
     let othersStock = 0
-    if (sortedProducts.length > 5) {
-      othersStock = sortedProducts.slice(5).reduce((sum, item) => sum + (item.currentQuantity || 0), 0)
+    if (sorted.length > 5) {
+      othersStock = sorted.slice(5).reduce((sum, p) => sum + (p.currentQuantity || 0), 0)
     }
-    
     const pieData = top5.map(p => ({ value: p.currentQuantity || 0, name: p.itemName }))
-    if (othersStock > 0) {
-      pieData.push({ value: othersStock, name: '其他商品汇总' })
-    }
-    
-    // 更新饼图响应式数据
+    if (othersStock > 0) pieData.push({ value: othersStock, name: '其他' })
     pieOption.value.series[0].data = pieData
 
-    // 3. 更新低库存预警 (找出库存 <= 10 的商品)
-    const lowStockThreshold = 10
-    const warnings = sortedProducts
-      .filter(p => (p.currentQuantity || 0) <= lowStockThreshold)
+    warningItems.value = sorted
+      .filter(p => (p.currentQuantity || 0) <= 10)
       .map(p => ({
         id: p.id,
         name: p.itemName,
-        code: `PRD-${String(p.id).padStart(5, '0')}`,
         stock: p.currentQuantity || 0
       }))
-    
-    warningItems.value = warnings
-
-  } catch (error) {
-    message.error('无法连接后端获取仪表盘数据')
-    console.error(error)
+  } catch (err) {
+    message.error('获取仪表盘数据失败')
   }
 }
 
-// 页面挂载时拉取真实数据
-onMounted(() => {
-  fetchDashboardData()
-})
+onMounted(() => fetchDashboardData())
 
-// 2. 快捷操作配置
-const fastActions = [
-  { name: '录入新商品', path: '/product', icon: AddCircleOutline },
-  { name: '处理入库', path: '/inbound', icon: LogInOutline },
-  { name: '处理出库', path: '/outbound', icon: LogOutOutline },
-  { name: '发起盘点', path: '/stocktake', icon: ClipboardOutline },
-]
-
-// 3. 预警列表模拟数据
-const warningItems = ref([
-  { id: 1, name: '雷蛇机械键盘 V3', code: 'PRD-10023', stock: 3 },
-  { id: 2, name: '罗技炼狱鼠标', code: 'PRD-10045', stock: 1 },
-  { id: 3, name: '27寸护眼显示器', code: 'PRD-10088', stock: 4 },
-])
-
-// 4. 图表配置 (折线图)
 const trendOption = ref({
   tooltip: { trigger: 'axis' },
   legend: { data: ['入库数量', '出库数量'], bottom: 0 },
@@ -207,136 +131,145 @@ const trendOption = ref({
   yAxis: { type: 'value' },
   series: [
     {
-      name: '入库数量',
-      type: 'line',
-      smooth: true,
+      name: '入库数量', type: 'line', smooth: true,
       data: [120, 132, 101, 134, 90, 230, 210],
       itemStyle: { color: '#18a058' },
       areaStyle: {
         color: {
           type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [{ offset: 0, color: 'rgba(24,160,88,0.3)' }, { offset: 1, color: 'rgba(24,160,88,0.05)' }]
+          colorStops: [{ offset: 0, color: 'rgba(24,160,88,0.25)' }, { offset: 1, color: 'rgba(24,160,88,0.02)' }]
         }
       }
     },
     {
-      name: '出库数量',
-      type: 'line',
-      smooth: true,
+      name: '出库数量', type: 'line', smooth: true,
       data: [220, 182, 191, 234, 290, 330, 310],
       itemStyle: { color: '#2080f0' },
       areaStyle: {
         color: {
           type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [{ offset: 0, color: 'rgba(32,128,240,0.3)' }, { offset: 1, color: 'rgba(32,128,240,0.05)' }]
+          colorStops: [{ offset: 0, color: 'rgba(32,128,240,0.25)' }, { offset: 1, color: 'rgba(32,128,240,0.02)' }]
         }
       }
     }
   ]
 })
 
-// 5. 图表配置 (饼图)
 const pieOption = ref({
   tooltip: { trigger: 'item' },
   legend: { top: 'bottom' },
-  series: [
-    {
-      name: '库存分布',
-      type: 'pie',
-      radius: ['40%', '70%'],
-      avoidLabelOverlap: false,
-      itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
-      label: { show: false, position: 'center' },
-      emphasis: {
-        label: { show: true, fontSize: 16, fontWeight: 'bold' }
-      },
-      labelLine: { show: false },
-      data: [
-        { value: 1048, name: '电子外设' },
-        { value: 735, name: '办公耗材' },
-        { value: 580, name: '文具用品' },
-        { value: 484, name: '电脑整机' },
-        { value: 300, name: '其他' }
-      ]
-    }
-  ]
+  series: [{
+    name: '库存分布', type: 'pie',
+    radius: ['40%', '70%'],
+    avoidLabelOverlap: false,
+    itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+    label: { show: false },
+    emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+    labelLine: { show: false },
+    data: []
+  }]
 })
 </script>
 
 <style scoped>
-.page-container {
-  padding-bottom: 24px;
+.dashboard {
+  padding-top: 24px;
 }
-
-/* 统一的卡片阴影和圆角设置，提升质感 */
-.n-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+.metric-strip {
+  display: flex;
+  gap: 1px;
+  background: #e8f0fe;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
-
-/* 顶部数据卡片样式 */
-.stat-card {
-  height: 120px;
+.metric-item {
+  flex: 1;
+  padding: 20px 24px;
+  background: #e8f0fe;
 }
-.stat-content {
+.metric-label {
+  font-size: 13px;
+  color: #5a7fb5;
+  margin-bottom: 4px;
+}
+.metric-value {
+  font-size: 30px;
+  font-weight: 600;
+  color: #1a2d4a;
+}
+.charts-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.chart-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+}
+.chart-trend { flex: 2; }
+.chart-pie { flex: 1; display: flex; flex-direction: column; }
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.chart-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+.chart { width: 100%; flex: 1; min-height: 280px; }
+.low-stock {
+  margin-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+.low-stock-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d03050;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.low-stock-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
 }
-.stat-info {
+.low-stock-item:hover { background: #fef0f0; }
+.low-stock-name { font-size: 13px; color: #333; }
+.low-stock-count { font-size: 13px; font-weight: 600; color: #d03050; }
+.quick-actions {
   display: flex;
-  flex-direction: column;
+  gap: 12px;
 }
-.stat-title {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-}
-.stat-value {
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
-  line-height: 1.2;
-}
-.stat-trend {
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-.stat-trend.up { color: #18a058; }
-.stat-trend.down { color: #d03050; }
-
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+.quick-action-btn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  padding: 14px 0;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
-/* 图表区域样式 */
-.chart-card {
-  height: 400px;
-}
-.chart {
-  height: 320px;
-  width: 100%;
-}
-
-/* 底部区域 */
-.action-card {
-  height: 320px;
-}
-.action-btn {
-  height: 80px;
-  font-size: 16px;
-  border-radius: 8px;
-}
-.alert-card {
-  height: 320px;
-  overflow-y: auto;
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  color: #0052D9;
 }
 </style>
