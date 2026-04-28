@@ -1,20 +1,24 @@
+### Spring Boot ###
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+### Maven ###
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-### IntelliJ IDEA ###
-# Logs
+### Frontend ###
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/.nuxt/
+frontend/coverage/
+
+### Logs ###
 logs
 *.log
 npm-debug.log*
@@ -22,14 +26,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+backend.log
 
-frontend/node_modules/
-frontend/dist/
-frontend/dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
+### Editor & IDE ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.vscode/
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -41,27 +48,14 @@ frontend/dist-ssr
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+*.local
 
-### VS Code ###
-.vscode/
-
-frontend/.vite/
-frontend/.nuxt/
-frontend/node_modules/
-frontend/dist/
-frontend/dist-ssr/
-frontend/coverage/
-
-backend.log
-.worktrees/
+### Claude Code ###
 .claude/
+.worktrees/
+.github/java-upgrade/
