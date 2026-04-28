@@ -1,8 +1,4 @@
-<p align="center">
-  <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" width="80" alt="logo">
-</p>
-
-<h1 align="center">FlowStock-MS</h1>
+<h1 align="center">📦 FlowStock-MS</h1>
 <p align="center">A clean, modern Inventory Management System built with <strong>Spring Boot 3</strong> and <strong>Vue 3</strong>.</p>
 
 <p align="center">
