@@ -23,13 +23,13 @@ const routes = [
         path: 'inbound',
         name: 'Inbound',
         component: () => import('../views/inbound/index.vue'),
-        meta: { title: '入库管理' }
+        meta: { title: '入库管理', defaultMode: 'in' }
       },
       {
         path: 'outbound',
         name: 'Outbound',
-        component: () => import('../views/outbound/index.vue'),
-        meta: { title: '出库管理' }
+        component: () => import('../views/inbound/index.vue'),
+        meta: { title: '出库管理', defaultMode: 'out' }
       },
       {
         path: 'stocktake',

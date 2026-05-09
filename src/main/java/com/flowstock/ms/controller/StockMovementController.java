@@ -1,12 +1,15 @@
 package com.flowstock.ms.controller;
 
+import com.flowstock.ms.dto.InboundRecordDTO;
 import com.flowstock.ms.dto.MovementRequest;
+import com.flowstock.ms.dto.OutboundRecordDTO;
 import com.flowstock.ms.dto.Result;
-import com.flowstock.ms.entity.Inventory;
-import com.flowstock.ms.service.ProductService;
+import com.flowstock.ms.entity.InboundRecord;
+import com.flowstock.ms.entity.OutboundRecord;
 import com.flowstock.ms.service.StockMovementService;
-import com.flowstock.ms.service.StocktakeService;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stock-movements")
@@ -16,6 +19,20 @@ public class StockMovementController {
 
     public StockMovementController(StockMovementService movementService){
         this.movementService = movementService;
+    }
+
+    @GetMapping("/inbound")
+    public Result<List<InboundRecordDTO>> listInbound() {
+        return Result.success(movementService.getAllInboundRecords().stream()
+                .map(r -> { InboundRecordDTO dto = new InboundRecordDTO(); dto.setId(r.getId()); dto.setItemId(r.getInventory().getId()); dto.setQuantity(r.getQuantity()); dto.setInboundTime(r.getInboundTime()); return dto; })
+                .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/outbound")
+    public Result<List<OutboundRecordDTO>> listOutbound() {
+        return Result.success(movementService.getAllOutboundRecords().stream()
+                .map(r -> { OutboundRecordDTO dto = new OutboundRecordDTO(); dto.setId(r.getId()); dto.setItemId(r.getInventory().getId()); dto.setQuantity(r.getQuantity()); dto.setOutboundTime(r.getOutboundTime()); return dto; })
+                .collect(Collectors.toList()));
     }
 
     @PostMapping("/inbound")

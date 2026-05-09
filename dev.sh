@@ -19,8 +19,12 @@ echo -e "${GREEN}正在启动 Spring Boot (日志记录在 backend.log)...${NC}"
 ./mvnw spring-boot:run > backend.log 2>&1 &
 BACKEND_PID=$!
 
-# 3. 启动前端
-echo -e "${GREEN}正在启动 Vue 3 前端...${NC}"
+# 3. 等待后端就绪
+echo -e "${YELLOW}等待后端启动...${NC}"
+until curl -s http://localhost:8080/api/products > /dev/null 2>&1; do
+    sleep 1
+done
+echo -e "${GREEN}后端就绪，正在启动前端...${NC}"
 # 使用 --silent 减少 npm 自身的废话
 cd frontend && npm run dev -- &
 FRONTEND_PID=$!

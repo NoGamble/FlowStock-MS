@@ -1,5 +1,13 @@
 import request from './request'
 
+export function getInboundRecords() {
+  return request({ url: '/api/stock-movements/inbound', method: 'get' })
+}
+
+export function getOutboundRecords() {
+  return request({ url: '/api/stock-movements/outbound', method: 'get' })
+}
+
 // 执行入库
 export function inboundAction(data) {
   return request({
