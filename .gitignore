@@ -59,3 +59,8 @@ backend.log
 .claude/
 .worktrees/
 .github/java-upgrade/
+
+### Codex ###
+AGENT.md
+### docs ###
+/docs

@@ -4,8 +4,6 @@ import com.flowstock.ms.dto.InboundRecordDTO;
 import com.flowstock.ms.dto.MovementRequest;
 import com.flowstock.ms.dto.OutboundRecordDTO;
 import com.flowstock.ms.dto.Result;
-import com.flowstock.ms.entity.InboundRecord;
-import com.flowstock.ms.entity.OutboundRecord;
 import com.flowstock.ms.service.StockMovementService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;

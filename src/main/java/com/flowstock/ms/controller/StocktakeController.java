@@ -2,7 +2,6 @@ package com.flowstock.ms.controller;
 
 import com.flowstock.ms.dto.Result;
 import com.flowstock.ms.dto.StocktakeResponse;
-import com.flowstock.ms.entity.StocktakeRecord;
 import com.flowstock.ms.service.StocktakeService;
 import org.springframework.web.bind.annotation.*;
 
